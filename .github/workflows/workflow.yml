@@ -26,6 +26,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.1 # https://github.com/JamesIves/github-pages-deploy-action
         with:
           branch: gh-pages
-          folder: build
           ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }}
-          message: 'Deployed to GitHub Pages'

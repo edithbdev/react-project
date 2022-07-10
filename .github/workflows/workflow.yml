@@ -1,7 +1,4 @@
 name: Github pages deploy
-
-  # The image to use for the build.
-  image: docker:stable
  
   # The stages of the workflow.
   stages:

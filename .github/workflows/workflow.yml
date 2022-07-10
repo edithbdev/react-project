@@ -26,7 +26,7 @@ jobs:
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app
 
       - name: Deploy to GitHub Pages
-        uses: actions/github-pages-deploy@v1
+        uses: JamesIves/github-pages-deploy-action@4.1.1 # https://github.com/JamesIves/github-pages-deploy-action
         with:
           branch: gh-pages
           folder: ./packages/build

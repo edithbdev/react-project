@@ -1,0 +1,128 @@
+image: docker:stable
+
+name: Github Pages Deploy
+
+stages:
+  - build
+  - deploy
+
+services:
+  - name: build
+    image: docker:stable
+    stage: build
+    steps:
+      - name: build
+        run:
+          - docker build -t github-pages-deploy .
+      - name: deploy
+        run:
+          - docker run -d -p 80:80 -p 443:443 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/var/www/html github-pages-deploy
+
+  - name: cleanup
+    image: docker:stable
+    stage: cleanup
+    steps:
+      - name: cleanup
+        run:
+          - docker rm $(docker ps -a -q)
+
+  - name: test
+    image: docker:stable
+    stage: test
+    steps:
+      - name: test
+        run:
+          - docker run -d -p 80:80 -p 443:443 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/var/www/html github-pages-deploy
+          - docker exec -it $(docker ps -a -q) bash
+          - docker stop $(docker ps -a -q)
+          - docker rm $(docker ps -a -q)
+
+  - name: test-build
+    image: docker:stable
+    stage: test-build
+    steps:
+      - name: test-build
+        run:
+          - docker build -t github-pages-deploy .
+          - docker run -d -p 80:80 -p 443:443 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/var/www/html github-pages-deploy
+          - docker exec -it $(docker ps -a -q) bash
+          - docker stop $(docker ps -a -q)
+          - docker rm $(docker ps -a -q)
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build-container:
+    name: Build Container
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: actions/login@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/{{ github.repository }}:{{ github.ref }} .
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/{{ github.repository }}:{{ github.ref }}
+
+      - name: Install and build
+        run: npm install && npm run build
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.1 # https://github.com/JamesIves/github-pages-deploy-action
+        with:
+          branch: gh-pages # The branch the action will deploy to
+          folder: build # The folder the action will deploy
+          ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }} # The SSH key to use for deployment
+
+  # The services of the workflow.
+  services:
+    - name: build
+      image: docker:stable
+      stage: build
+      steps:
+        - name: build
+          run:
+            - docker build -t github-pages-deploy .
+        - name: deploy
+          run:
+            - docker run -d -p 80:80 -p 443:443 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/var/www/html github-pages-deploy
+
+    - name: cleanup
+      image: docker:stable
+      stage: cleanup
+      steps:
+        - name: cleanup
+          run:
+            - docker rm $(docker ps -a -q)
+
+    - name: test
+      image: docker:stable
+      stage: test
+      steps:
+        - name: test
+          run:
+            - docker run -d -p 80:80 -p 443:443 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/var/www/html github-pages-deploy
+            - docker exec -it $(docker ps -a -q) bash
+            - docker stop $(docker ps -a -q)
+            - docker rm $(docker ps -a -q)
+
+    - name: test-build
+      image: docker:stable
+      stage: test-build
+      steps:
+        - name: test-build
+          run:
+            - docker build -t github-pages-deploy .
+            - docker run -d -p 80:80 -p 443:443 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/var/www/html github-pages-deploy
+            - docker exec -it $(docker ps -a -q) bash
+            - docker stop $(docker ps -a

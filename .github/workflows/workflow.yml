@@ -1,41 +1,41 @@
 name: Github pages deploy
  
-  stages:
-    - build
-    - deploy
+stages:
+  - build
+  - deploy
  
-  on:
-    push:
-      branches:
-        - 'main'
+on:
+  push:
+    branches:
+      - 'main'
 
-  jobs:
-    build-container:
-      name: Build Container
-      runs-on: ubuntu-latest
+jobs:
+  build-container:
+    name: Build Container
+    runs-on: ubuntu-latest
 
-      steps:
-        - name: Checkout code
-        uses: actions/checkout@v3
+    steps:
+      - name: Checkout code
+      uses: actions/checkout@v3
 
-        - name: Login to Docker Hub
-        uses: actions/login@v1
+      - name: Login to Docker Hub
+      uses: actions/login@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push Docker images
+      run:
+        docker build -t github-pages-deploy .
+        docker push github-pages-deploy
+
+      - name: Deploy to GitHub Pages
+      uses: actions/github-pages-deploy@v1
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-        name: Build and push Docker images
-        run:
-          docker build -t github-pages-deploy .
-          docker push github-pages-deploy
-
-        - name: Deploy to GitHub Pages
-        uses: actions/github-pages-deploy@v1
-          with:
-            repository: edithbdev/react-app
-            branch: main
-            ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }}
-            message: "Deployed to GitHub Pages"
+          branch: gh-pages
+          folder: ./packages/build
+          ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }}
+          message: "Deployed to GitHub Pages"
               
 
        

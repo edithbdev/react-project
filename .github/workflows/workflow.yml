@@ -1,17 +1,14 @@
 name: Github pages deploy
  
-  # The stages of the workflow.
   stages:
     - build
     - deploy
  
-  # The on-conditions of the workflow.
   on:
     push:
       branches:
         - 'main'
 
-  # The jobs of the workflow.
   jobs:
     build-container:
       name: Build Container
@@ -19,17 +16,21 @@ name: Github pages deploy
 
       steps:
         - name: Checkout code
-        - uses: actions/checkout@v3
+        uses: actions/checkout@v3
 
-        name: Build and push Docker images
-        uses: actions/docker@v2
+        - name: Login to Docker Hub
+        uses: actions/login@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: edithbdev/react-app
+
+        name: Build and push Docker images
+        run:
+          docker build -t github-pages-deploy .
+          docker push github-pages-deploy
 
         - name: Deploy to GitHub Pages
-        - uses: actions/github-pages-deploy@v1
+        uses: actions/github-pages-deploy@v1
           with:
             repository: edithbdev/react-app
             branch: main

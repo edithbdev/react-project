@@ -18,16 +18,21 @@ jobs:
       - name: Checkout code
       uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-      uses: actions/login@v1
-      with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Build and push Docker images
+      - name: Install and build dependencies
       run:
-        docker build -t github-pages-deploy .
-        docker push github-pages-deploy
+        - npm install
+        - npm run build
+
+      - name: Build docker image
+      run:
+        - docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app .
+
+      - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: Push docker image
+      run:
+        - docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app
 
       - name: Deploy to GitHub Pages
       uses: actions/github-pages-deploy@v1

@@ -11,24 +11,24 @@ jobs:
 
     steps:
       - name: checkout code
-      uses: actions/checkout@v3
+        uses: actions/checkout@v3
 
       - name: Install and build dependencies
-      run: npm install && npm run build
+        run: npm install && npm run build
 
       - name: Build docker image
-      run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app .
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/react-app .
 
       - name: Login to Docker Hub
-      run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
 
       - name: Push docker image
-      run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/react-app
 
       - name: Deploy to GitHub Pages
-      uses: actions/github-pages-deploy@v1
-        with:
-          branch: gh-pages
-          folder: ./packages/build
-          ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }}
-          message: "Deployed to GitHub Pages"
+        uses: actions/github-pages-deploy@v1
+          with:
+            branch: gh-pages
+            folder: ./packages/build
+            ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }}
+            message: "Deployed to GitHub Pages"

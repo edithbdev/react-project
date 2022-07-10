@@ -6,7 +6,8 @@ on:
       - 'main'
 
 jobs:
-  build:
+  build-container:
+    name: Build Container
     runs-on: ubuntu-latest
 
     strategy:
@@ -14,14 +15,15 @@ jobs:
         node-version: [16.x]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Install and build
         run: npm install && npm run build
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@4.1.1
+        uses: JamesIves/github-pages-deploy-action@4.1.1 # https://github.com/JamesIves/github-pages-deploy-action
         with:
           branch: gh-pages # The branch the action will deploy to
           folder: build # The folder the action will deploy
+          ssh-key: ${{ secrets.REACT_PROJECT_DEPLOY_KEY }} # The SSH key to use for deployment
